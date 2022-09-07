@@ -25,6 +25,7 @@ def comment_code():
 @api.route('/bug_fix_small', methods=['POST'])   
 def small_bug_fix():
   json_received=request.get_json()
+  print(json_received)
   code = json_received['message']
   
   item='generate small patch: ' + code 
