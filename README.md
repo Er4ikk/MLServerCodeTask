@@ -34,7 +34,10 @@ generate bug fix(POST)
   
  generate comment summary(POST)
   http://localhost:5000/comment_summary
-  
+ 
+ 
+download models here:
+ https://www.dropbox.com/s/7reltqulwyh1wnq/finetuned-model.zip?dl=0
   
 multi-task model used:
   https://drive.google.com/drive/folders/167AS_TI7cCWKpGzowgRdCTfDF11m9zsU
