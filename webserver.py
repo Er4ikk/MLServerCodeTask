@@ -12,25 +12,12 @@ api = Flask(__name__)
 
 
 
-@api.route('/code', methods=['POST'])
-def comment_code():
-  json_received=request.get_json()
-  code = json_received['message']
-  
-  comment_for_code=generate_comment_code(code)
-  
-  
-  return json.dumps(comment_for_code)
-
 @api.route('/bug_fix_small', methods=['POST'])   
 def small_bug_fix():
   json_received=request.get_json()
   print(json_received)
   code = json_received['message']
-  
-  item='generate small patch: ' + code 
-  
-      
+  item='generate small patch: ' + code    
   answer=generate_answer(item)
   return json.dumps(answer)
   
@@ -57,17 +44,6 @@ def comment_summary():
   answer=generate_answer(item)
   return json.dumps(answer)
    
-   
-   
-def generate_comment_code(code):
-   pipeline = SummarizationPipeline(
-    model=AutoModelWithLMHead.from_pretrained(COMMENT_GENERATOR_MODEL_PATH),
-    tokenizer=AutoTokenizer.from_pretrained(COMMENT_GENERATOR_MODEL_PATH, skip_special_tokens=True)
-   	#device=2
-    )
-
-   tokenized_code =code
-   return pipeline([tokenized_code])
    
 
    
