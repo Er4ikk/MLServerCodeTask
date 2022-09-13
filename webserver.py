@@ -1,12 +1,17 @@
-
+import os
 import transformers
 from transformers import AutoTokenizer, AutoModelWithLMHead, SummarizationPipeline,T5Tokenizer, T5Config, T5ForConditionalGeneration
 from flask import Flask, json,request
 import nlp
 import torch
 
+
+INPUT_FILE="code_abstraction/example.txt"
+OUTPUT_FILE="code_abstraction/out.txt"
+IDIOMS_FILE="code_abstraction/idioms/idioms.csv"
 COMMENT_GENERATOR_MODEL_PATH="finetuned-model/comment_generator"
 MULTI_TASK_MODEL_PATH="finetuned-model/Pytorch-Model"
+ABSTRACT_CONVERTER="code_abstraction/src2abs.jar"
 
 api = Flask(__name__)
 
@@ -34,7 +39,8 @@ api = Flask(__name__)
 @api.route('/bug_fix_small', methods=['POST'])   
 def small_bug_fix():
   json_received=request.get_json()
-  code = json_received['message']
+  code = abstract_code(json_received['message'])
+  print(code)
   item='generate small patch: ' + code    
   answer=generate_answer(item)
   return json.dumps(answer)
@@ -58,6 +64,19 @@ def comment_summary():
   return json.dumps(answer)
    
    
+def abstract_code(code):
+  code_fragment=os.path.abspath(INPUT_FILE)
+  abstract_code_fragment=os.path.abspath(OUTPUT_FILE)
+  
+  example_file= open (INPUT_FILE,"w")
+  example_file.write(code)
+  example_file.close()
+
+  os.system("java -jar "+ABSTRACT_CONVERTER+" single method "+code_fragment+" "+abstract_code_fragment+" "+IDIOMS_FILE)
+
+  output_file = open (OUTPUT_FILE,"r")
+  response = output_file.read()
+  return response
 
    
    
