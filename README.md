@@ -22,9 +22,6 @@ command to start the server:
 server will run on http://localhost:5000!
 
 API:
-
-generate comment(POST)
-  http://localhost:5000/code
   
 generate assertion(POST)
   http://localhost:5000/assertion_raw  
@@ -42,5 +39,4 @@ download models here:
 multi-task model used:
   https://drive.google.com/drive/folders/167AS_TI7cCWKpGzowgRdCTfDF11m9zsU
   
-single task comment generation used:
-  https://huggingface.co/SEBIS/code_trans_t5_small_code_comment_generation_java_transfer_learning_finetune?text=protected+String+renderUri+%28+URI+uri+%29+%7B+return+uri+.+toASCIIString+%28+%29+%3B+%7D
+
