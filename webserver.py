@@ -43,6 +43,7 @@ def small_bug_fix():
   print(code)
   item='generate small patch: ' + code    
   answer=generate_answer(item)
+  print(answer)
   return json.dumps(answer)
   
   
