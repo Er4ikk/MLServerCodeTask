@@ -6,12 +6,15 @@ import nlp
 import torch
 
 
-INPUT_FILE="code_abstraction/example.txt"
-OUTPUT_FILE="code_abstraction/out.txt"
+INPUT_FILE="code_abstraction/buggyCode.txt"
+OUTPUT_FILE="code_abstraction/abstractCode.txt"
 IDIOMS_FILE="code_abstraction/idioms/idioms.csv"
 COMMENT_GENERATOR_MODEL_PATH="finetuned-model/comment_generator"
 MULTI_TASK_MODEL_PATH="finetuned-model/Pytorch-Model"
 ABSTRACT_CONVERTER="code_abstraction/src2abs.jar"
+MAP_FILE="code_abstraction/abstractCode.txt.map"
+MODEL_RESPONSE_FILE="code_abstraction/modelResponse.txt"
+ABSTRACT_MODEL_RESPONSE="code_abstraction/abstractModelResponse.txt"
 
 api = Flask(__name__)
 
@@ -40,11 +43,31 @@ api = Flask(__name__)
 def small_bug_fix():
   json_received=request.get_json()
   code = abstract_code(json_received['message'])
-  print(code)
   item='generate small patch: ' + code    
+   
   answer=generate_answer(item)
-  print(answer)
-  return json.dumps(answer)
+  answer_to_string = ' '.join(map(str,answer))
+  answer_to_string = abstract_model_response(answer_to_string.replace('"',' '))
+  answer_to_string =deabstract_code(answer_to_string)
+  
+  print(answer_to_string )
+  return json.dumps(answer_to_string )
+  
+@api.route('/bug_fix_medium', methods=['POST'])   
+def medium_bug_fix():
+  json_received=request.get_json()
+  code = abstract_code(json_received['message'])
+  item='generate medium patch: ' + code    
+  
+  answer=generate_answer(item)
+  answer_to_string = ' '.join(map(str,answer))
+  answer_to_string = abstract_model_response(answer_to_string.replace('"',' '))
+  answer_to_string =deabstract_code(answer_to_string)
+  
+ 
+  print(answer_to_string )
+  return json.dumps(answer_to_string )
+   
   
   
 @api.route('/assertion_raw', methods=['POST'])   
@@ -60,7 +83,7 @@ def assertion_raw():
 def comment_summary():
   json_received=request.get_json()
   code = json_received['message']
-  item='generate comment: ' + code      
+  item='generate comment: ' + code     
   answer=generate_answer(item)
   return json.dumps(answer)
    
@@ -78,9 +101,37 @@ def abstract_code(code):
   output_file = open (OUTPUT_FILE,"r")
   response = output_file.read()
   return response
+  
+  
+def abstract_model_response(code):
+  code_fragment=os.path.abspath(MODEL_RESPONSE_FILE)
+  abstract_code_fragment=os.path.abspath(ABSTRACT_MODEL_RESPONSE)
+  
+  example_file= open (MODEL_RESPONSE_FILE,"w")
+  example_file.write(code)
+  example_file.close()
 
-   
-   
+  os.system("java -jar "+ABSTRACT_CONVERTER+" single method "+code_fragment+" "+abstract_code_fragment+" "+IDIOMS_FILE)
+
+  output_file = open (ABSTRACT_MODEL_RESPONSE,"r")
+  response = output_file.read()
+  return response
+
+def deabstract_code(code):
+  map_fragment=os.path.abspath(MAP_FILE)
+  model_code_fragment=os.path.abspath(MODEL_RESPONSE_FILE)
+  
+  example_file= open (MODEL_RESPONSE_FILE,"w")
+  example_file.write(code)
+  example_file.close()
+
+  os.system("java -jar code_abstraction/deabstractor.main.jar  "+ map_fragment+" "+ model_code_fragment+" idioms/idioms.csv")
+
+  model_response_file = open (MODEL_RESPONSE_FILE,"r")
+  response = model_response_file.read()
+  
+  return response
+  
 def generate_answer(item):
    # tokenizer
    spm_path = MULTI_TASK_MODEL_PATH+'/dl4se_vocab.model'
@@ -98,7 +149,6 @@ def generate_answer(item):
           )
         
    model.eval()
-   
    
    tokenized_code=tokenizer.encode(item,return_tensors='pt')
 
