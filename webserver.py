@@ -165,7 +165,8 @@ def generate_answer(item):
    return result
    
 if __name__ == '__main__':
-    api.run() 
+    from waitress import serve
+    serve(api, host="0.0.0.0", port=5000)
 
 
 
